@@ -1,0 +1,171 @@
+/* Classic Windows console–like GDB view (works in light/dark themes). */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  background: #0c0c0c;
+  color: #cccccc;
+}
+
+.gdb-term-chrome {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #3c3c3c;
+}
+
+.gdb-term-title {
+  font-weight: 600;
+  color: #9cdcfe;
+  letter-spacing: 0.02em;
+}
+
+.gdb-term-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.gdb-term-actions button {
+  padding: 2px 8px;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  background: #3c3c3c;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 2px;
+}
+
+.gdb-term-actions button:hover {
+  background: #505050;
+}
+
+.gdb-term-out {
+  flex: 1 1 auto;
+  min-height: 120px;
+  overflow: auto;
+  padding: 8px 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+  -webkit-user-select: text;
+  background: #0c0c0c;
+  color: #cccccc;
+}
+
+.gdb-term-input-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 8px 4px;
+  background: #1a1a1a;
+  border-top: 1px solid #3c3c3c;
+}
+
+.gdb-term-prompt {
+  flex: 0 0 auto;
+  padding-top: 6px;
+  color: #569cd6;
+  font-weight: 600;
+}
+
+.gdb-term-cmd {
+  flex: 1 1 auto;
+  min-height: 48px;
+  max-height: 35vh;
+  resize: vertical;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.35;
+  background: #0c0c0c;
+  color: #cccccc;
+  border: 1px solid #3c3c3c;
+  border-radius: 2px;
+}
+
+.gdb-term-cmd:focus {
+  outline: 1px solid #569cd6;
+  outline-offset: 1px;
+}
+
+.gdb-term-sendbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px 8px;
+  background: #1a1a1a;
+}
+
+.gdb-term-sendbar button {
+  padding: 4px 14px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  background: #0e639c;
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+}
+
+.gdb-term-sendbar button:hover {
+  background: #1177bb;
+}
+
+.gdb-term-hint {
+  font-size: 11px;
+  color: #858585;
+}
+
+.ctx-menu {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+  padding: 4px;
+  background: #252526;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.ctx-menu button {
+  text-align: left;
+  background: transparent;
+  color: #cccccc;
+  border: none;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.ctx-menu button:hover {
+  background: #094771;
+  color: #ffffff;
+}

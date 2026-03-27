@@ -1,0 +1,241 @@
+{
+  "name": "arduino-avr-stub-debug",
+  "displayName": "Arduino AVR Stub Debug",
+  "description": "PlatformIO-like AVR Stub debug flow for Arduino IDE 2.x",
+  "version": "0.0.1",
+  "publisher": "local",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IamTheVector/arduino-avr-stub-debug.git"
+  },
+  "bugs": {
+    "url": "https://github.com/IamTheVector/arduino-avr-stub-debug/issues"
+  },
+  "homepage": "https://github.com/IamTheVector/arduino-avr-stub-debug#readme",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": [
+    "Debuggers",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:avrStubDebug.setupWorkspace",
+    "onCommand:avrStubDebug.createSketchTemplate",
+    "onCommand:avrStubDebug.startDebugSession",
+    "onCommand:avrStubDebug.stopDebugSession",
+    "onCommand:avrStubDebug.break",
+    "onCommand:avrStubDebug.continue",
+    "onCommand:avrStubDebug.runToNextBreakpoint",
+    "onCommand:avrStubDebug.next",
+    "onCommand:avrStubDebug.step",
+    "onCommand:avrStubDebug.finish",
+    "onCommand:avrStubDebug.backtrace",
+    "onCommand:avrStubDebug.locals",
+    "onCommand:avrStubDebug.printVariable",
+    "onCommand:avrStubDebug.breakpointHere",
+    "onCommand:avrStubDebug.deleteAllBreakpoints",
+    "onCommand:avrStubDebug.syncBreakpointsNow",
+    "onCommand:avrStubDebug.addVariableFromSelection",
+    "onCommand:avrStubDebug.openGdbTerminal",
+    "onCommand:avrStubDebug.installDebugBuildFlags",
+    "onCommand:avrStubDebug.removeDebugBuildFlags",
+    "onDebugResolve:cppdbg",
+    "onView:avrStubDebug.panel",
+    "onView:avrStubDebug.gdbTerminal"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "secondarySideBar": [
+        {
+          "id": "avrStubDebug",
+          "title": "AVR Debug",
+          "icon": "$(debug-alt)"
+        }
+      ],
+      "panel": [
+        {
+          "id": "avrStubDebugGdb",
+          "title": "AVR-GDB",
+          "icon": "$(terminal)"
+        }
+      ]
+    },
+    "views": {
+      "avrStubDebug": [
+        {
+          "type": "webview",
+          "id": "avrStubDebug.panel",
+          "name": "AVR Debug",
+          "contextualTitle": "AVR Debug"
+        }
+      ],
+      "avrStubDebugGdb": [
+        {
+          "type": "webview",
+          "id": "avrStubDebug.gdbTerminal",
+          "name": "Terminal",
+          "contextualTitle": "AVR-GDB"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "avrStubDebug.setupWorkspace",
+        "title": "AVR Stub: Setup Debug Workspace"
+      },
+      {
+        "command": "avrStubDebug.createSketchTemplate",
+        "title": "AVR Stub: Create Sketch Template"
+      },
+      {
+        "command": "avrStubDebug.startDebugSession",
+        "title": "AVR Stub: Start Debug Session"
+      },
+      {
+        "command": "avrStubDebug.stopDebugSession",
+        "title": "AVR Stub: Stop Debug Session"
+      },
+      {
+        "command": "avrStubDebug.break",
+        "title": "AVR Stub: Break (Interrupt)"
+      },
+      {
+        "command": "avrStubDebug.continue",
+        "title": "AVR Stub: Continue"
+      },
+      {
+        "command": "avrStubDebug.runToNextBreakpoint",
+        "title": "AVR Stub: Run To Next Breakpoint"
+      },
+      {
+        "command": "avrStubDebug.next",
+        "title": "AVR Stub: Step Over (next)"
+      },
+      {
+        "command": "avrStubDebug.step",
+        "title": "AVR Stub: Step Into (step)"
+      },
+      {
+        "command": "avrStubDebug.finish",
+        "title": "AVR Stub: Step Out (finish)"
+      },
+      {
+        "command": "avrStubDebug.backtrace",
+        "title": "AVR Stub: Backtrace"
+      },
+      {
+        "command": "avrStubDebug.locals",
+        "title": "AVR Stub: Show Locals"
+      },
+      {
+        "command": "avrStubDebug.printVariable",
+        "title": "AVR Stub: Print Variable/Expression"
+      },
+      {
+        "command": "avrStubDebug.breakpointHere",
+        "title": "AVR Stub: Add Breakpoint Here"
+      },
+      {
+        "command": "avrStubDebug.deleteAllBreakpoints",
+        "title": "AVR Stub: Delete All Breakpoints"
+      },
+      {
+        "command": "avrStubDebug.syncBreakpointsNow",
+        "title": "AVR Stub: Sync Editor Breakpoints → GDB"
+      },
+      {
+        "command": "avrStubDebug.addVariableFromSelection",
+        "title": "AVR Stub: Add Variable to Panel (from selection)"
+      },
+      {
+        "command": "avrStubDebug.openGdbTerminal",
+        "title": "AVR Stub: Open AVR-GDB Terminal"
+      },
+      {
+        "command": "avrStubDebug.installDebugBuildFlags",
+        "title": "AVR Stub: Install Debug Build Flags (-Og -g3, PlatformIO-like)"
+      },
+      {
+        "command": "avrStubDebug.removeDebugBuildFlags",
+        "title": "AVR Stub: Remove Debug Build Flags"
+      }
+    ],
+    "configuration": {
+      "title": "Arduino AVR Stub Debug",
+      "properties": {
+        "avrStubDebug.gdbPath": {
+          "type": "string",
+          "default": "avr-gdb",
+          "description": "Path to avr-gdb executable."
+        },
+        "avrStubDebug.elfPath": {
+          "type": "string",
+          "default": "${workspaceFolder}/build/sketch.elf",
+          "description": "Path to ELF used for symbols."
+        },
+        "avrStubDebug.serialPort": {
+          "type": "string",
+          "default": "",
+          "description": "Serial port where AVR Stub is listening (leave empty for auto-detect)."
+        },
+        "avrStubDebug.baudRate": {
+          "type": "number",
+          "default": 115200,
+          "description": "Serial baud rate used by AVR Stub."
+        },
+        "avrStubDebug.syncEditorBreakpoints": {
+          "type": "boolean",
+          "default": true,
+          "description": "Mirror gutter breakpoints (editor) to avr-gdb in the AVR Stub GDB terminal."
+        },
+        "avrStubDebug.breakpointSyncDebounceMs": {
+          "type": "number",
+          "default": 350,
+          "description": "Debounce after breakpoint add/remove before sending GDB commands."
+        },
+        "avrStubDebug.enableDynamicSourceSkips": {
+          "type": "boolean",
+          "default": false,
+          "description": "Auto skip non-workspace sources from ELF (slow if true; keep false for faster GDB startup)."
+        },
+        "avrStubDebug.maxDynamicSkipFiles": {
+          "type": "number",
+          "default": 48,
+          "description": "Max skip file entries when enableDynamicSourceSkips is on."
+        },
+        "avrStubDebug.breakpointSyncDelayMs": {
+          "type": "number",
+          "default": 1000,
+          "description": "Wait after Start Debug Session before first GDB breakpoint sync."
+        },
+        "avrStubDebug.breakpointSyncInterruptFirst": {
+          "type": "boolean",
+          "default": false,
+          "description": "Send GDB interrupt before applying breakpoints (try true if GDB ignores breaks while running)."
+        },
+        "avrStubDebug.skipArduinoCoreSources": {
+          "type": "boolean",
+          "default": false,
+          "description": "If enabled, GDB will `skip file` for Arduino core sources (wiring.c, wiring_digital.c, main.cpp). Disable to step into core (e.g. delay())."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "clean": "rimraf out",
+    "build": "tsc -p ./",
+    "watch": "tsc -w -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@types/vscode": "^1.74.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3",
+    "vsce": "^2.15.0"
+  }
+}
