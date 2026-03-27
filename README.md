@@ -1,6 +1,6 @@
-# Arduino AVR Stub Debug (Arduino IDE 2.x)
+# Arduino AVR Stub Debug Extension (Arduino IDE 2.x)
 
-Extension for Arduino IDE 2.x to get a PlatformIO-like debug flow with `avr-stub`:
+VS Code / Arduino IDE 2.x extension for a PlatformIO-like debug flow with `avr-stub`:
 
 - **A single `avr-gdb` process** (classic `avr-gdb -q -x avr-stub.gdbinit …elf` + `target remote` on the COM port) — **no second GDB** on the serial port.
 - **“AVR Debug” panel** (secondary side bar): toolbar, **GDB COMMANDS** (help + compact input), variables, watch, stack, breakpoints, registers, memory, disassembly — same single `avr-gdb` process.

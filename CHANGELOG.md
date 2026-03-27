@@ -9,4 +9,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial public release: Arduino IDE 2.x extension for AVR stub debugging with `avr-gdb` (MI2), sidebar **AVR Debug** panel, bottom **AVR-GDB** terminal view, breakpoint sync, serial port selection, configurable `skip` for Arduino core sources, GDB path picker, and install documentation.
+- Initial public release: **Arduino AVR Stub Debug Extension** for Arduino IDE 2.x — AVR stub debugging with `avr-gdb` (MI2), sidebar **AVR Debug** panel, bottom **AVR-GDB** terminal view, breakpoint sync, serial port selection, configurable `skip` for Arduino core sources, GDB path picker, and install documentation.
