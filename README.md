@@ -47,6 +47,8 @@ void loop() {
 
 ## Install the extension (local)
 
+The **`.vsix` file is not stored in Git** (it is generated). Run the commands below, then install the produced `.vsix`. For sharing with others, attach the `.vsix` to a **GitHub Release** (recommended) instead of committing binaries.
+
 1. From this folder:
    - `npm install`
    - `npm run build`

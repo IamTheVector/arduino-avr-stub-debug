@@ -1,6 +1,9 @@
 node_modules/
 out/
+# Build artifact; build with `npm run package` or attach to GitHub Releases instead of committing.
 *.vsix
+# Local helper scripts (often contain machine-specific paths).
+*.bat
 .DS_Store
 Thumbs.db
 *.log

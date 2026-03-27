@@ -73,6 +73,10 @@ Expected output artifact:
 
 - `arduino-avr-stub-debug-<version>.vsix`
 
+### Why is the `.vsix` not in the Git repository?
+
+The packaged **`.vsix` is a build artifact**, not source code. It is **ignored by Git** (see `.gitignore`) so the repo stays small and diffs stay readable. **Build it locally** with `npm run package`, or publish the file as a **[GitHub Release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)** asset for download.
+
 Install in Arduino IDE 2.x:
 
 - Command Palette -> `Install from VSIX`
