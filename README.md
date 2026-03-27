@@ -97,7 +97,7 @@ In Settings (or `.vscode/settings.json`) set:
 - `avrStubDebug.serialPort` (leave empty for auto-detect; examples: `COM12` on Windows, `/dev/ttyACM0` on Linux, `/dev/cu.usbmodem*` on macOS)
 - `avrStubDebug.baudRate` (default `115200`)
 - `avrStubDebug.skipArduinoCoreSources` (default `false`)  
-  If `true`, GDB will `skip file` for Arduino core sources to reduce noise; if you want to step into core code (e.g. `delay()`), keep it `false`.
+  If `true`, GDB will `skip file` for Arduino core sources to reduce noise; if you want to step into core code (e.g. `delay()`), keep it `false`. Edit in **Settings**; start a **new debug session** after changing it.
 
 ## Debug flow
 
