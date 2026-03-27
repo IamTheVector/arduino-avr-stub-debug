@@ -1,4 +1,6 @@
 src/**
+scripts/**
+release/**
 tsconfig.json
 **/*.map
 **/*.ts

@@ -33,15 +33,23 @@ The folder that contains only `avr-gcc.exe`, `avr-objcopy.exe`, etc. **may not**
 
 Then set **`avrStubDebug.gdbPath`** in the extension settings to that path (or use the file picker when the extension cannot find GDB).
 
-### 3. This extension (VSIX)
+### 3. This extension (VSIX) — **this is what you install first for the IDE**
 
-**Name in the Extensions list:** *Arduino AVR Stub Debug Extension* (`arduino-avr-stub-debug`).
+The built **`.vsix`** file is **committed in Git** under **`release/arduino-avr-stub-debug-<version>.vsix`** (version matches **`package.json`**). You do **not** need Node.js or `npm` to install the extension — only to develop it.
 
-Install **`arduino-avr-stub-debug-<version>.vsix`** in Arduino IDE 2.x:
+**Name after install (Extensions view):** *Arduino AVR Stub Debug Extension* (`arduino-avr-stub-debug`).
 
-- **Command Palette** → **Extensions: Install from VSIX…** → select the `.vsix` file.
+**Install in Arduino IDE 2.x (or VS Code):**
+
+1. Obtain the `.vsix` (clone this repo, download the repo ZIP, or on GitHub open the **`release`** folder and download the file).
+2. **Command Palette** (`Ctrl+Shift+P` / Windows+Linux, `Cmd+Shift+P` / macOS).
+3. Run **Extensions: Install from VSIX…**
+4. Pick **`release/arduino-avr-stub-debug-<version>.vsix`**.
+5. Reload the window if prompted.
 
 After installation, configure **`avrStubDebug.serialPort`** (empty = auto-detect where possible), **`avrStubDebug.elfPath`**, and start a session with **`AVR Stub: Start Debug Session`**.
+
+Maintainers rebuild the committed VSIX with **`npm run package:release`** at the repo root after version bumps.
 
 ---
 
@@ -55,31 +63,20 @@ After installation, configure **`avrStubDebug.serialPort`** (empty = auto-detect
 - **`avr-gdb`** from the [Microchip AVR 8-bit toolchain](https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers) (or another full toolchain that ships `avr-gdb` for AVR).
 
 ### IDE extension (required)
-- This extension (`arduino-avr-stub-debug`), installed from the `.vsix` as above.
+- This extension (`arduino-avr-stub-debug`), installed from **`release/arduino-avr-stub-debug-<version>.vsix`** (see step 3 above).
 
 ---
 
-## Local build and package
+## Maintainer: rebuild the committed VSIX
 
-From extension root:
+From the repository root:
 
 ```powershell
 npm install
-npm run build
-npm run package
+npm run package:release
 ```
 
-Expected output artifact:
-
-- `arduino-avr-stub-debug-<version>.vsix`
-
-### Why is the `.vsix` not in the Git repository?
-
-The packaged **`.vsix` is a build artifact**, not source code. It is **ignored by Git** (see `.gitignore`) so the repo stays small and diffs stay readable. **Build it locally** with `npm run package`, or publish the file as a **[GitHub Release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)** asset for download.
-
-Install in Arduino IDE 2.x:
-
-- Command Palette -> `Install from VSIX`
+This writes **`release/arduino-avr-stub-debug-<version>.vsix`**. Bump **`version`** in `package.json`, rebuild, and commit the new file when you publish a new release.
 
 ---
 
@@ -109,7 +106,7 @@ void setup() {
 ## Release checklist
 
 - [ ] `npm run build` passes
-- [ ] `npm run package` creates VSIX
+- [ ] `npm run package:release` updates **`release/arduino-avr-stub-debug-<version>.vsix`** and it is committed
 - [ ] README updated
 - [ ] LICENSE present (MIT)
 - [ ] docs in `docs/release/`

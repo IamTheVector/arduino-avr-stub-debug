@@ -229,7 +229,8 @@
     "clean": "rimraf out",
     "build": "tsc -p ./",
     "watch": "tsc -w -p ./",
-    "package": "vsce package"
+    "package": "vsce package",
+    "package:release": "npm run build && node scripts/package-to-release.cjs"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",

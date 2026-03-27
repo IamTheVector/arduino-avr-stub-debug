@@ -56,7 +56,7 @@ In the extension folder:
 
 In Arduino IDE 2.x:
 
-4. Install `arduino-avr-stub-debug-0.0.1.vsix` (Install from VSIX)
+4. Install `release/arduino-avr-stub-debug-0.0.1.vsix` via **Extensions: Install from VSIX…** (update version if `package.json` changed)
 5. Open the sketch project folder
 6. Command Palette: `AVR Stub: Setup Debug Workspace`
 7. Build and upload the sketch to the target (with avr-stub)

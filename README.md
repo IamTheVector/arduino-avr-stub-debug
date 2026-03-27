@@ -15,7 +15,7 @@ VS Code / Arduino IDE 2.x extension for a PlatformIO-like debug flow with `avr-s
 - **Arduino library:** from [jdolinay/avr_debug](https://github.com/jdolinay/avr_debug), copy only **`arduino/library/avr-debugger`** into your sketchbook **`libraries`** folder (e.g. `Documents/Arduino/libraries/avr-debugger`). This project is **not** installed via Arduino Library Manager.
 - Sketch built with debug symbols (ELF available)
 
-**Step-by-step install:** see **`docs/release/INSTALL_AND_RELEASE.md`** (library → Microchip toolchain / `avr-gdb` → VSIX).
+**Full setup (library + `avr-gdb` + debug):** see **`docs/release/INSTALL_AND_RELEASE.md`**.
 
 ### PlatformIO-style build flags (`-Og -g3`)
 
@@ -45,17 +45,40 @@ void loop() {
 }
 ```
 
-## Install the extension (local)
+## Install the extension (download the VSIX)
 
-The **`.vsix` file is not stored in Git** (it is generated). Run the commands below, then install the produced `.vsix`. For sharing with others, attach the `.vsix` to a **GitHub Release** (recommended) instead of committing binaries.
+The **packaged extension** is committed in **`release/`** as **`arduino-avr-stub-debug-<version>.vsix`** (version = `version` in **`package.json`**). That is what you install — **no need to run `npm`** unless you develop the extension.
 
-1. From this folder:
-   - `npm install`
-   - `npm run build`
-   - `npm run package`
-2. Install the generated `.vsix` in Arduino IDE 2.x (Command Palette → **Install from VSIX**).
+### Arduino IDE 2.x
 
-**First-time setup on a new PC:** install the **`avr-debugger`** library from GitHub, install **`avr-gdb`** from the Microchip AVR toolchain, then install the `.vsix`. Details: **`docs/release/INSTALL_AND_RELEASE.md`**.
+1. Get the **`.vsix`** from the **`release`** folder of this repo (clone, ZIP download, or GitHub → **release** → file).
+2. In Arduino IDE 2.x, open the **Command Palette**:
+   - **Windows / Linux:** `Ctrl+Shift+P`
+   - **macOS:** `Cmd+Shift+P`
+3. Type **`Install from VSIX`** and run **Extensions: Install from VSIX…**
+4. Select the **`arduino-avr-stub-debug-*.vsix`** file.
+5. **Reload** the window if the IDE asks you to.
+
+After install you should see **Arduino AVR Stub Debug Extension** under Extensions.
+
+### VS Code (optional)
+
+Same steps: Command Palette → **Install from VSIX…** → select the same `.vsix` file.
+
+### First-time debug setup (after the extension is installed)
+
+You still need the **`avr-debugger`** firmware library, **`avr-gdb`**, and a sketch built with debug symbols — see **`docs/release/INSTALL_AND_RELEASE.md`**.
+
+### Developers (build the VSIX from source)
+
+From the repository root:
+
+```text
+npm install
+npm run package:release
+```
+
+This runs `npm run build` and writes **`release/arduino-avr-stub-debug-<version>.vsix`**. Commit the updated file when you bump the version.
 
 ## Workspace setup
 

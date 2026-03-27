@@ -1,4 +1,4 @@
-﻿# Split Git Guide (Extension and Library)
+# Split Git Guide (Extension and Library)
 
 Use two repositories:
 
@@ -12,7 +12,7 @@ Use two repositories:
 Suggested content:
 
 - `src/`, `media/`, `docs/`, `README.md`, `LICENSE`, `package.json`, `tsconfig.json`
-- optionally built `.vsix` attached as GitHub Release asset (not committed to main branch)
+- the **extension** repo commits **`release/arduino-avr-stub-debug-<version>.vsix`** so users can install without building; optional duplicate on GitHub Releases is still fine
 
 Suggested steps:
 
