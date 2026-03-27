@@ -35,6 +35,8 @@ Then set **`avrStubDebug.gdbPath`** in the extension settings to that path (or u
 
 ### 3. This extension (VSIX)
 
+**Name in the Extensions list:** *Arduino AVR Stub Debug Extension* (`arduino-avr-stub-debug`).
+
 Install **`arduino-avr-stub-debug-<version>.vsix`** in Arduino IDE 2.x:
 
 - **Command Palette** → **Extensions: Install from VSIX…** → select the `.vsix` file.
