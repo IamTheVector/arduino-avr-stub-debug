@@ -112,6 +112,6 @@ void setup() {
 
 ---
 
-## Known publishing note
+## Repository
 
-This workspace is currently **not a Git repository**. To publish, initialize or clone a repo first.
+Extension source: [github.com/IamTheVector/arduino-avr-stub-debug](https://github.com/IamTheVector/arduino-avr-stub-debug)
