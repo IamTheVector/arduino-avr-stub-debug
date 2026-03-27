@@ -850,9 +850,6 @@ async function refreshAvrDebugPanel(): Promise<void> {
   if (!avrDebugView) {
     return;
   }
-  const skipArduinoCoreSources = vscode.workspace
-    .getConfiguration("avrStubDebug")
-    .get<boolean>("skipArduinoCoreSources", false);
   const cfg = vscode.workspace.getConfiguration("avrStubDebug");
   const serialPorts = listSerialPortsSync();
   const selectedSerialPortRaw = cfg.get<string>("serialPort", "COM5");
@@ -887,7 +884,6 @@ async function refreshAvrDebugPanel(): Promise<void> {
       status: "Idle — run AVR Stub: Start Debug Session",
       terminalMode: true,
       debuggerMode: false,
-      skipArduinoCoreSources,
       serialPorts,
       selectedSerialPort: selectedForUi,
       panelHint:
@@ -927,7 +923,6 @@ async function refreshAvrDebugPanel(): Promise<void> {
       status: "GDB/MI active — variable/watch values refreshed from runtime (stop/interrupt)",
       terminalMode: false,
       debuggerMode: true,
-      skipArduinoCoreSources,
       serialPorts,
       selectedSerialPort: selectedForUi,
       panelHint: "",
@@ -946,7 +941,6 @@ async function refreshAvrDebugPanel(): Promise<void> {
       status: `Refresh error: ${msg}`,
       terminalMode: false,
       debuggerMode: true,
-      skipArduinoCoreSources,
       serialPorts,
       selectedSerialPort: selectedForUi,
       panelHint: "",
@@ -1195,42 +1189,6 @@ async function addBreakpointAtCursor(): Promise<void> {
   vscode.debug.addBreakpoints([new vscode.SourceBreakpoint(loc)]);
 }
 
-async function applySkipArduinoCoreSources(enabled: boolean): Promise<void> {
-  const cfg = vscode.workspace.getConfiguration("avrStubDebug");
-  await cfg.update("skipArduinoCoreSources", enabled, vscode.ConfigurationTarget.Workspace);
-
-  // If session is not running, just refresh UI.
-  if (!gdbMiSession) {
-    await refreshAvrDebugPanel();
-    return;
-  }
-
-  // Apply skip directives live in the existing GDB session (no restart).
-  // GDB supports "skip delete" to clear all skip entries.
-  const folder = await ensureWorkspaceFolder();
-  const settings = readSettings();
-  const detectedGdbPath = resolveGdbPath(folder, settings);
-  const detectedElfPath = resolveElfPath(folder, settings);
-  const dynamicSkips = getDynamicSkipCommands(
-    detectedGdbPath,
-    detectedElfPath,
-    folder.uri.fsPath
-  );
-  const desired = [...coreSkipCommands(), ...dynamicSkips];
-
-  try {
-    // Clear all current skip rules, then re-apply desired ones.
-    await gdbMiSession.sendConsole("skip delete").catch(() => undefined);
-    for (const cmd of desired) {
-      await gdbMiSession.sendConsole(cmd).catch(() => undefined);
-    }
-  } catch {
-    // ignore and keep UI responsive
-  }
-
-  await refreshAvrDebugPanel();
-}
-
 async function applySerialPortSelection(port: string): Promise<void> {
   const v = port.trim().toUpperCase();
   if (!v) {
@@ -1322,11 +1280,6 @@ async function handleAvrDebugWebviewMessage(msg: Record<string, unknown>): Promi
       break;
     case "openGdbTerminal":
       await vscode.commands.executeCommand("avrStubDebug.openGdbTerminal");
-      break;
-    case "setSkipArduinoCoreSources":
-      if (typeof msg.value === "boolean") {
-        await applySkipArduinoCoreSources(msg.value);
-      }
       break;
     case "serialPortsRefresh":
       await refreshAvrDebugPanel();

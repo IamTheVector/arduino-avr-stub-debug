@@ -117,15 +117,6 @@ export class AvrDebugWebviewProvider implements vscode.WebviewViewProvider {
   <div class="collapsible" id="sec-stack">
     <div class="sec-h">CALL STACK</div>
     <div class="sec-b">
-      <div class="core-filter-tab">
-        <label class="core-filter-row">
-          <input id="chkSkipArduinoCoreSources" type="checkbox" />
-          Filter Arduino core sources (skip wiring/delay)
-        </label>
-        <div class="core-filter-explain">
-          On reduces noise, but <strong>Step Into</strong> may stay in user code (e.g. <code>delay()</code>).
-        </div>
-      </div>
       <p class="sec-help">Call chain from the current instruction (inner frame first). Example: <code>loop</code> at line 24 → <code>main</code>. Filled when the target is stopped and GDB has stack unwinding info.</p>
       <div id="sec-stack-body"></div>
     </div>

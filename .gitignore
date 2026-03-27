@@ -1,8 +1,5 @@
 node_modules/
 out/
-# Ignore VSIX except the official package at repo root (tracked).
-*.vsix
-!/arduino-avr-stub-debug-*.vsix
 # Local helper scripts (often contain machine-specific paths).
 *.bat
 .DS_Store

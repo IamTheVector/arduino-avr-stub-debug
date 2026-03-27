@@ -2,7 +2,7 @@
   "name": "arduino-avr-stub-debug",
   "displayName": "Arduino AVR Stub Debug Extension",
   "description": "VS Code extension: PlatformIO-like AVR stub debug for Arduino IDE 2.x (avr-gdb)",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "local",
   "license": "MIT",
   "repository": {
@@ -220,7 +220,7 @@
         "avrStubDebug.skipArduinoCoreSources": {
           "type": "boolean",
           "default": false,
-          "description": "If enabled, GDB will `skip file` for Arduino core sources (wiring.c, wiring_digital.c, main.cpp). Disable to step into core (e.g. delay())."
+          "description": "If enabled, GDB will `skip file` for Arduino core sources (wiring.c, wiring_digital.c, main.cpp). Disable to step into core (e.g. delay()). Change applies on the next debug session."
         }
       }
     }

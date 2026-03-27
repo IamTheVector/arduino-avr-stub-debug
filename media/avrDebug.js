@@ -3,7 +3,6 @@
   const vscode = acquireVsCodeApi();
 
   const gdbCmdArea = /** @type {HTMLTextAreaElement | null} */ (document.getElementById("gdbCmdArea"));
-  const skipCoreChk = /** @type {HTMLInputElement | null} */ (document.getElementById("chkSkipArduinoCoreSources"));
   const serialSelect = /** @type {HTMLSelectElement | null} */ (document.getElementById("serialPortSelect"));
   const btnSerialRefresh = document.getElementById("btn-serial-refresh");
 
@@ -48,15 +47,6 @@
   bindBtn("btn-help-break", { type: "gdbHelp", topic: "break" });
   bindBtn("btn-help-define", { type: "gdbHelp", topic: "define" });
   bindBtn("btn-open-gdb-term", { type: "openGdbTerminal" });
-
-  if (skipCoreChk) {
-    skipCoreChk.addEventListener("change", () => {
-      vscode.postMessage({
-        type: "setSkipArduinoCoreSources",
-        value: !!skipCoreChk.checked
-      });
-    });
-  }
 
   if (btnSerialRefresh) {
     btnSerialRefresh.addEventListener("click", () => {
@@ -522,9 +512,6 @@
         if (selected && options.some((x) => x.id === selected)) {
           serialSelect.value = selected;
         }
-      }
-      if (skipCoreChk && typeof msg.skipArduinoCoreSources === "boolean") {
-        skipCoreChk.checked = msg.skipArduinoCoreSources;
       }
       const idleHint =
         "Start a session. Type GDB in AVR-GDB CONSOLE (Ctrl+Enter to run). Views update when the target stops.";
