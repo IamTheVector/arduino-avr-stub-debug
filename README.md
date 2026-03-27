@@ -106,6 +106,10 @@ In Settings (or `.vscode/settings.json`) set:
 
 This project is licensed under the **MIT License**. The full text is in the `LICENSE` file in the extension package root (same folder as `package.json`).
 
+## Source repository
+
+- [github.com/IamTheVector/arduino-avr-stub-debug](https://github.com/IamTheVector/arduino-avr-stub-debug)
+
 ## Release docs
 
 - `docs/release/INSTALL_AND_RELEASE.md`
