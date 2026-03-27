@@ -12,7 +12,7 @@ Use two repositories:
 Suggested content:
 
 - `src/`, `media/`, `docs/`, `README.md`, `LICENSE`, `package.json`, `tsconfig.json`
-- the **extension** repo commits **`release/arduino-avr-stub-debug-<version>.vsix`** so users can install without building; optional duplicate on GitHub Releases is still fine
+- the **extension** repo commits **`arduino-avr-stub-debug-<version>.vsix`** at the repo root so users can install without building; optional duplicate on GitHub Releases is still fine
 
 Suggested steps:
 

@@ -47,11 +47,11 @@ void loop() {
 
 ## Install the extension (download the VSIX)
 
-The **packaged extension** is committed in **`release/`** as **`arduino-avr-stub-debug-<version>.vsix`** (version = `version` in **`package.json`**). That is what you install — **no need to run `npm`** unless you develop the extension.
+The **packaged extension** is committed at the **repository root** as **`arduino-avr-stub-debug-<version>.vsix`** (version = `version` in **`package.json`**). That is what you install — **no need to run `npm`** unless you develop the extension.
 
 ### Arduino IDE 2.x
 
-1. Get the **`.vsix`** from the **`release`** folder of this repo (clone, ZIP download, or GitHub → **release** → file).
+1. Get the **`.vsix`** from the **root of this repo** (clone, ZIP download, or on GitHub open the repo and download **`arduino-avr-stub-debug-*.vsix`**).
 2. In Arduino IDE 2.x, open the **Command Palette**:
    - **Windows / Linux:** `Ctrl+Shift+P`
    - **macOS:** `Cmd+Shift+P`
@@ -78,7 +78,7 @@ npm install
 npm run package:release
 ```
 
-This runs `npm run build` and writes **`release/arduino-avr-stub-debug-<version>.vsix`**. Commit the updated file when you bump the version.
+This runs `npm run build` and writes **`arduino-avr-stub-debug-<version>.vsix`** at the repo root. Commit the updated file when you bump the version.
 
 ## Workspace setup
 
