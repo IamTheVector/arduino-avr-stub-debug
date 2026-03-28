@@ -1,6 +1,8 @@
 /**
  * Builds the extension and writes arduino-avr-stub-debug-<version>.vsix at the repository root
  * (version from package.json). Run: npm run package:release
+ *
+ * The output .vsix must be committed to Git — it is what end users install (do not gitignore it).
  */
 const { readFileSync } = require("fs");
 const { execSync } = require("child_process");

@@ -1,3 +1,6 @@
+# Policy: the installable package `arduino-avr-stub-debug-*.vsix` at the repository root
+# MUST stay tracked in Git — that is what end users install. Never add `*.vsix` here.
+
 node_modules/
 out/
 # Local helper scripts (often contain machine-specific paths).

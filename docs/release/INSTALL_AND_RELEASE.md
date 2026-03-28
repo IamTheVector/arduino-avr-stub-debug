@@ -67,6 +67,10 @@ Maintainers rebuild the committed VSIX with **`npm run package:release`** at the
 
 ---
 
+## Repository policy: VSIX must be in Git
+
+The **`.vsix` at the repository root is the primary deliverable** for users (Install from VSIX). It **must** be committed on `master` for every release. **Do not** add `*.vsix` to `.gitignore`. After `npm run package:release`, include the new `arduino-avr-stub-debug-<version>.vsix` in the same commit as `package.json` / `CHANGELOG.md`.
+
 ## Maintainer: rebuild the committed VSIX
 
 From the repository root:
@@ -76,7 +80,7 @@ npm install
 npm run package:release
 ```
 
-This writes **`arduino-avr-stub-debug-<version>.vsix`** at the repository root. Bump **`version`** in `package.json`, rebuild, and commit the new file when you publish a new release.
+This writes **`arduino-avr-stub-debug-<version>.vsix`** at the repository root. Bump **`version`** in `package.json`, rebuild, **commit the `.vsix`**, and push.
 
 ---
 

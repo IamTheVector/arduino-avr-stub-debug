@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - When **avr-gdb exits unexpectedly** (not Stop session), the **AVR-GDB** panel shows a **verbose banner** (exit code, signal, stderr tail) and a **notification** with actions to open the panel or copy details.
 
+### Documentation
+
+- Documented that **`arduino-avr-stub-debug-*.vsix`** at the repository root is **always committed** in Git and must not be gitignored; added GitHub raw download example in README.
+
 ## [0.0.3] - 2026-03-28
 
 ### Fixed
