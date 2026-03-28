@@ -49,6 +49,8 @@ export type GdbMiSessionOptions = {
   onLog?: (line: string, stream: "console" | "log") => void;
   /** Raw MI line for debugging */
   onDebugLine?: (line: string) => void;
+  /** GDB process ended (crash, quit, or killed) — clear UI session state */
+  onExit?: (code: number | null, signal: NodeJS.Signals | null) => void;
 };
 
 /** Escape payload for `-interpreter-exec console "..."` (must be a single MI line — real newlines break the parser). */
@@ -174,8 +176,13 @@ export class GdbMiSession {
       const t = c.toString("utf8");
       this.options.onLog?.(t, "log");
     });
-    this.proc.on("exit", () => {
+    this.proc.on("exit", (code, signal) => {
       this.proc = undefined;
+      for (const [, p] of this.pending) {
+        p.reject(new Error("GDB process exited"));
+      }
+      this.pending.clear();
+      this.options.onExit?.(code ?? null, signal ?? null);
     });
     this.proc.on("error", (err) => {
       this.options.onLog?.(`GDB spawn error: ${err.message}\n`, "log");

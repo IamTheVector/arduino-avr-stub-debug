@@ -950,6 +950,27 @@ async function refreshAvrDebugPanel(): Promise<void> {
     return;
   }
 
+  // While the inferior is running, do not call stack/locals/memory MI (races GDB and can kill the session).
+  if (gdbIsRunning) {
+    avrDebugView.postFullUpdate({
+      status: "Target running — use Pause / toolbar interrupt to stop",
+      terminalMode: false,
+      debuggerMode: true,
+      serialPorts,
+      selectedSerialPort: selectedForUi,
+      panelHint: "Stack/variables refresh when the program stops. Breakpoint list updates from the editor.",
+      variables: userVariables.map((v) => ({ name: v.name, value: v.value || "…", type: "" })),
+      stack: [],
+      registers: [],
+      memory: "",
+      disassembly: "",
+      breakpoints: bpRows,
+      watch: watchExpressions.map((w) => ({ ...w, value: w.value || "…" })),
+      peripherals: []
+    });
+    return;
+  }
+
   try {
     await refreshUserVariablesFromGdb();
     await refreshWatchFromGdb();
@@ -1018,6 +1039,25 @@ async function stopGdbSession(): Promise<void> {
   await refreshAvrDebugPanel();
 }
 
+/** GDB child exited unexpectedly — keep extension state consistent (MCU may still run). */
+async function handleGdbProcessExited(code: number | null, signal: NodeJS.Signals | null): Promise<void> {
+  gdbIsRunning = false;
+  const session = gdbMiSession;
+  if (!session) {
+    return;
+  }
+  gdbMiSession = undefined;
+  await session.dispose();
+  gdbBreakpointSnapshot.clear();
+  clearExecutionDecorations();
+  resetUserAndWatchDisplayValues();
+  await refreshAvrDebugPanel();
+  const sig = signal ? `, ${signal}` : "";
+  vscode.window.showWarningMessage(
+    `GDB exited (code ${code ?? "?"}${sig}). The board may keep running. Run AVR Stub: Start Debug Session again.`
+  );
+}
+
 async function startGdbSession(): Promise<void> {
   const folder = await ensureWorkspaceFolder();
   const settings = readSettings();
@@ -1067,6 +1107,9 @@ async function startGdbSession(): Promise<void> {
     },
     onLog: (line, _stream) => {
       avrGdbTerminalView?.appendConsole(line);
+    },
+    onExit: (code, signal) => {
+      void handleGdbProcessExited(code, signal);
     }
   });
   await session.start();
@@ -1153,6 +1196,15 @@ function gdbPathForBreak(fsPath: string): string {
   return fsPath.split("\\").join("/");
 }
 
+/** Stable breakpoint identity for GDB sync (Windows paths are case-insensitive). */
+function normalizeBreakpointFileKey(fsPath: string): string {
+  const forward = gdbPathForBreak(path.normalize(fsPath));
+  if (process.platform === "win32") {
+    return forward.toLowerCase();
+  }
+  return forward;
+}
+
 function shouldSyncSourceBreakpoint(bp: vscode.SourceBreakpoint): boolean {
   const folder = vscode.workspace.workspaceFolders?.[0];
   if (!folder) {
@@ -1178,7 +1230,7 @@ function collectDesiredEditorBreakpoints(): Set<string> {
     if (!bp.enabled) {
       continue;
     }
-    const file = gdbPathForBreak(bp.location.uri.fsPath);
+    const file = normalizeBreakpointFileKey(bp.location.uri.fsPath);
     const line = bp.location.range.start.line + 1;
     desired.add(JSON.stringify([file, line]));
   }
