@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.3] - 2026-03-28
+
+### Fixed
+
+- **GDB path on macOS/Linux:** discovery and the file picker now use **`avr-gdb`** (no `.exe`), search **`~/Library/Arduino15`** (macOS) and **`~/.arduino15`** (Linux) for the Arduino toolchain, and the open-dialog filter no longer forces `.exe` on non-Windows.
+
 ## [0.0.2] - 2026-03-28
 
 ### Changed

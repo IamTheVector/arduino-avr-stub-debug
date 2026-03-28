@@ -386,7 +386,56 @@ function fileExists(filePath: string): boolean {
   }
 }
 
+/** AVR GDB binary file name for this OS (`avr-gdb.exe` on Windows, `avr-gdb` on macOS/Linux). */
+function avrGdbBinaryName(): string {
+  return process.platform === "win32" ? "avr-gdb.exe" : "avr-gdb";
+}
+
+/** Typical Arduino15 `avr-gcc` package roots (toolchain lives under versioned subfolders). */
+function arduino15AvrGccPackageRoots(): string[] {
+  const home = os.homedir();
+  if (process.platform === "win32") {
+    return [
+      path.join(home, "AppData", "Local", "Arduino15", "packages", "arduino", "tools", "avr-gcc"),
+      path.join(home, "AppData", "Local", "Arduino15", "packages", "builtin", "tools", "avr-gcc")
+    ];
+  }
+  if (process.platform === "darwin") {
+    return [
+      path.join(home, "Library", "Arduino15", "packages", "arduino", "tools", "avr-gcc"),
+      path.join(home, "Library", "Arduino15", "packages", "builtin", "tools", "avr-gcc")
+    ];
+  }
+  return [
+    path.join(home, ".arduino15", "packages", "arduino", "tools", "avr-gcc"),
+    path.join(home, ".arduino15", "packages", "builtin", "tools", "avr-gcc")
+  ];
+}
+
+/** Recursively collect files whose basename equals `baseName` (e.g. `avr-gdb` or `avr-gdb.exe`). */
+function collectFilesByBasenameRecursive(root: string, baseName: string, out: string[] = []): string[] {
+  if (!fileExists(root)) {
+    return out;
+  }
+  let entries: fs.Dirent[] = [];
+  try {
+    entries = fs.readdirSync(root, { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const entry of entries) {
+    const full = path.join(root, entry.name);
+    if (entry.isDirectory()) {
+      collectFilesByBasenameRecursive(full, baseName, out);
+    } else if (entry.isFile() && entry.name === baseName) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
 function resolveGdbPath(folder: vscode.WorkspaceFolder, settings: DebugSettings): string {
+  const binName = avrGdbBinaryName();
   const configured = expandWorkspaceVars(settings.gdbPath, folder);
   if (
     configured &&
@@ -400,11 +449,10 @@ function resolveGdbPath(folder: vscode.WorkspaceFolder, settings: DebugSettings)
   const workspaceParent = path.dirname(folder.uri.fsPath);
   const home = os.homedir();
   const candidates: string[] = [
-    path.join(workspaceParent, "libraries", "avr-debugger", "avr-gdb.exe"),
-    path.join(home, "Dropbox", "Arduino", "libraries", "avr-debugger", "avr-gdb.exe"),
-    path.join(home, "Documents", "Arduino", "libraries", "avr-debugger", "avr-gdb.exe"),
-    path.join(home, "AppData", "Local", "Arduino15", "packages", "arduino", "tools", "avr-gcc"),
-    path.join(home, "AppData", "Local", "Arduino15", "packages", "builtin", "tools", "avr-gcc")
+    path.join(workspaceParent, "libraries", "avr-debugger", binName),
+    path.join(home, "Dropbox", "Arduino", "libraries", "avr-debugger", binName),
+    path.join(home, "Documents", "Arduino", "libraries", "avr-debugger", binName),
+    ...arduino15AvrGccPackageRoots()
   ];
 
   // Add sketchbook-based candidates from arduino-cli config, if available.
@@ -416,7 +464,7 @@ function resolveGdbPath(folder: vscode.WorkspaceFolder, settings: DebugSettings)
       };
       const userDir = parsed.directories?.user;
       if (userDir) {
-        candidates.push(path.join(userDir, "libraries", "avr-debugger", "avr-gdb.exe"));
+        candidates.push(path.join(userDir, "libraries", "avr-debugger", binName));
       }
     }
   } catch {
@@ -424,10 +472,11 @@ function resolveGdbPath(folder: vscode.WorkspaceFolder, settings: DebugSettings)
   }
 
   for (const candidate of candidates) {
-    // For AVR-GCC tool folders, pick the newest installed avr-gdb.exe under versioned dirs.
+    // Under Arduino's avr-gcc package dir, pick the newest .../bin/avr-gdb(.exe).
     if (candidate.toLowerCase().endsWith(path.join("tools", "avr-gcc").toLowerCase())) {
-      const roots = collectFilesRecursive(candidate, ".exe")
-        .filter((p) => /[\\/]bin[\\/]avr-gdb\.exe$/i.test(p));
+      const roots = collectFilesByBasenameRecursive(candidate, binName).filter((p) =>
+        /[\\/]bin[\\/]avr-gdb(\.exe)?$/i.test(p)
+      );
       const newest = newestFile(roots);
       if (newest && fileExists(newest)) {
         return newest;
@@ -439,8 +488,11 @@ function resolveGdbPath(folder: vscode.WorkspaceFolder, settings: DebugSettings)
     }
   }
 
-  // If PATH has avr-gdb.exe, this may still work. Prefer explicit exe name on Windows.
-  return configured === "avr-gdb" ? "avr-gdb.exe" : configured;
+  // Bare name on PATH: use OS-appropriate executable name for spawn.
+  if (configured === "avr-gdb" || configured === "avr-gdb.exe") {
+    return binName;
+  }
+  return configured;
 }
 
 function isBareExecutableName(p: string): boolean {
@@ -458,28 +510,26 @@ async function pickGdbExecutableFromUser(
   folder: vscode.WorkspaceFolder,
   reason?: string
 ): Promise<string | undefined> {
+  const binName = avrGdbBinaryName();
   const hint = reason
-    ? `${reason}\n\nSelect avr-gdb.exe manually.`
-    : "avr-gdb.exe not found automatically.\n\nSelect avr-gdb.exe manually.";
-  const choice = await vscode.window.showWarningMessage(
-    hint,
-    { modal: true },
-    "Select avr-gdb.exe",
-    "Cancel"
-  );
-  if (choice !== "Select avr-gdb.exe") {
+    ? `${reason}\n\nSelect the ${binName} binary manually (usually under the AVR toolchain bin folder).`
+    : `${binName} not found automatically.\n\nSelect it manually (Microchip AVR toolchain or Arduino15 packages).`;
+  const selectLabel = `Select ${binName}`;
+  const choice = await vscode.window.showWarningMessage(hint, { modal: true }, selectLabel, "Cancel");
+  if (choice !== selectLabel) {
     return undefined;
   }
   const uris = await vscode.window.showOpenDialog({
-    title: "Select avr-gdb executable",
+    title: `Select ${binName}`,
     canSelectFiles: true,
     canSelectFolders: false,
     canSelectMany: false,
     defaultUri: folder.uri,
-    filters: {
-      Executable: ["exe"],
-      All: ["*"]
-    }
+    // Windows: .exe filter; macOS/Linux: no extension on GDB — offer all files.
+    filters:
+      process.platform === "win32"
+        ? { Executable: ["exe"], "All files": ["*"] }
+        : { "All files": ["*"] }
   });
   const picked = uris?.[0]?.fsPath;
   if (!picked) {
@@ -887,7 +937,7 @@ async function refreshAvrDebugPanel(): Promise<void> {
       serialPorts,
       selectedSerialPort: selectedForUi,
       panelHint:
-        "Start a session. Use the GDB CONSOLE in this panel (one line per Enter, like avr-gdb.exe). Expand sections below for views when the target is stopped.",
+        "Start a session. Use the GDB CONSOLE in this panel (one line per Enter, like avr-gdb). Expand sections below for views when the target is stopped.",
       variables: userVariables.map((v) => ({ name: v.name, value: v.value || "-", type: "" })),
       stack: [],
       registers: [],
@@ -976,7 +1026,7 @@ async function startGdbSession(): Promise<void> {
   const gdbInitPath = path.join(folder.uri.fsPath, ".vscode", "avr-stub.gdbinit");
   lastGdbInitPath = gdbInitPath;
 
-  // If discovery failed and we only have a bare command name, ask user to pick avr-gdb.exe.
+  // If discovery failed and we only have a bare command name, ask user to pick the GDB binary.
   if (isBareExecutableName(gdbPath) || !fileExists(gdbPath)) {
     const picked = await pickGdbExecutableFromUser(
       folder,
@@ -991,7 +1041,7 @@ async function startGdbSession(): Promise<void> {
 
   if (!isBareExecutableName(gdbPath) && !fileExists(gdbPath)) {
     vscode.window.showWarningMessage(
-      "avr-gdb.exe not found automatically. Check avr-debugger in sketchbook/libraries."
+      `${avrGdbBinaryName()} not found at the configured path. Check sketchbook/libraries/avr-debugger or Settings → avrStubDebug.gdbPath.`
     );
   }
   if (!fileExists(elfPath)) {

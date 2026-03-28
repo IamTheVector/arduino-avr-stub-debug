@@ -2,7 +2,7 @@
   "name": "arduino-avr-stub-debug",
   "displayName": "Arduino AVR Stub Debug Extension",
   "description": "VS Code extension: PlatformIO-like AVR stub debug for Arduino IDE 2.x (avr-gdb)",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "local",
   "license": "MIT",
   "repository": {
