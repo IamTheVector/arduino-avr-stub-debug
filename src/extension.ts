@@ -6,7 +6,7 @@ import { execSync } from "child_process";
 import { installArduinoDebugBuildFlags, removeArduinoDebugBuildFlags } from "./arduinoDebugFlags";
 import { AvrDebugWebviewProvider } from "./avrDebugWebview";
 import { AvrGdbTerminalWebviewProvider } from "./avrGdbTerminalWebview";
-import { GdbMiSession, StackFrame } from "./gdbMiSession";
+import { GdbMiSession, GdbProcessExitInfo, StackFrame } from "./gdbMiSession";
 
 type DebugSettings = {
   gdbPath: string;
@@ -950,27 +950,6 @@ async function refreshAvrDebugPanel(): Promise<void> {
     return;
   }
 
-  // While the inferior is running, do not call stack/locals/memory MI (races GDB and can kill the session).
-  if (gdbIsRunning) {
-    avrDebugView.postFullUpdate({
-      status: "Target running — use Pause / toolbar interrupt to stop",
-      terminalMode: false,
-      debuggerMode: true,
-      serialPorts,
-      selectedSerialPort: selectedForUi,
-      panelHint: "Stack/variables refresh when the program stops. Breakpoint list updates from the editor.",
-      variables: userVariables.map((v) => ({ name: v.name, value: v.value || "…", type: "" })),
-      stack: [],
-      registers: [],
-      memory: "",
-      disassembly: "",
-      breakpoints: bpRows,
-      watch: watchExpressions.map((w) => ({ ...w, value: w.value || "…" })),
-      peripherals: []
-    });
-    return;
-  }
-
   try {
     await refreshUserVariablesFromGdb();
     await refreshWatchFromGdb();
@@ -1039,23 +1018,58 @@ async function stopGdbSession(): Promise<void> {
   await refreshAvrDebugPanel();
 }
 
-/** GDB child exited unexpectedly — keep extension state consistent (MCU may still run). */
-async function handleGdbProcessExited(code: number | null, signal: NodeJS.Signals | null): Promise<void> {
-  gdbIsRunning = false;
-  const session = gdbMiSession;
-  if (!session) {
+/**
+ * GDB child process ended. If it was not {@link GdbMiSession.dispose}, show why (code, signal, stderr)
+ * so the board running "on its own" is not a silent failure.
+ */
+async function onGdbProcessExit(session: GdbMiSession, info: GdbProcessExitInfo): Promise<void> {
+  if (gdbMiSession !== session) {
     return;
   }
   gdbMiSession = undefined;
-  await session.dispose();
+  gdbIsRunning = false;
   gdbBreakpointSnapshot.clear();
   clearExecutionDecorations();
   resetUserAndWatchDisplayValues();
+
+  const codeStr = info.exitCode === null ? "null" : String(info.exitCode);
+  const sigStr = info.exitSignal ?? "none";
+
+  if (info.intentional) {
+    await refreshAvrDebugPanel();
+    return;
+  }
+
+  const banner =
+    "\n\n" +
+    "========== AVR GDB process exited unexpectedly ==========\n" +
+    "The debugger detached; the sketch on the board may keep running without breakpoints.\n\n" +
+    `Exit code: ${codeStr}\n` +
+    `Signal: ${sigStr}\n\n` +
+    "What this usually means:\n" +
+    "• GDB crashed (rare) or was killed by the OS / security software.\n" +
+    "• USB/serial dropped: avr-gdb lost the link to the stub; close other programs using the same COM port.\n" +
+    "• Stub reset: target reset can leave GDB with a broken remote session.\n" +
+    "• Out of memory or antivirus terminated avr-gdb.\n";
+
+  const errBlock =
+    info.stderrTail.trim().length > 0
+      ? `\n--- GDB stderr (last lines) ---\n${info.stderrTail.trim()}\n--- end stderr ---\n`
+      : "\n(No stderr captured before exit.)\n";
+
+  avrGdbTerminalView?.appendConsole(banner + errBlock + "========================================================\n\n");
+
+  const shortMsg = `AVR GDB exited unexpectedly (code ${codeStr}, signal ${sigStr}). Open the AVR-GDB panel for full details.`;
+  const pick = await vscode.window.showErrorMessage(shortMsg, "Open AVR-GDB panel", "Copy details");
+  if (pick === "Open AVR-GDB panel") {
+    await vscode.commands.executeCommand("avrStubDebug.openGdbTerminal");
+  } else if (pick === "Copy details") {
+    await vscode.env.clipboard.writeText(
+      `${banner}${errBlock}\nShort: ${shortMsg}`
+    );
+  }
+
   await refreshAvrDebugPanel();
-  const sig = signal ? `, ${signal}` : "";
-  vscode.window.showWarningMessage(
-    `GDB exited (code ${code ?? "?"}${sig}). The board may keep running. Run AVR Stub: Start Debug Session again.`
-  );
 }
 
 async function startGdbSession(): Promise<void> {
@@ -1108,8 +1122,8 @@ async function startGdbSession(): Promise<void> {
     onLog: (line, _stream) => {
       avrGdbTerminalView?.appendConsole(line);
     },
-    onExit: (code, signal) => {
-      void handleGdbProcessExited(code, signal);
+    onProcessExit: (info) => {
+      void onGdbProcessExit(session, info);
     }
   });
   await session.start();
@@ -1196,15 +1210,6 @@ function gdbPathForBreak(fsPath: string): string {
   return fsPath.split("\\").join("/");
 }
 
-/** Stable breakpoint identity for GDB sync (Windows paths are case-insensitive). */
-function normalizeBreakpointFileKey(fsPath: string): string {
-  const forward = gdbPathForBreak(path.normalize(fsPath));
-  if (process.platform === "win32") {
-    return forward.toLowerCase();
-  }
-  return forward;
-}
-
 function shouldSyncSourceBreakpoint(bp: vscode.SourceBreakpoint): boolean {
   const folder = vscode.workspace.workspaceFolders?.[0];
   if (!folder) {
@@ -1230,7 +1235,7 @@ function collectDesiredEditorBreakpoints(): Set<string> {
     if (!bp.enabled) {
       continue;
     }
-    const file = normalizeBreakpointFileKey(bp.location.uri.fsPath);
+    const file = gdbPathForBreak(bp.location.uri.fsPath);
     const line = bp.location.range.start.line + 1;
     desired.add(JSON.stringify([file, line]));
   }

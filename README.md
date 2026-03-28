@@ -120,14 +120,13 @@ In Settings (or `.vscode/settings.json`) set:
 
 ## Notes
 
+- If **GDB closes on its own** while debugging, check the **AVR-GDB** panel: the extension prints **exit code**, **signal**, and **stderr** when the shutdown was not intentional (e.g. serial drop, crash, COM stolen).
 - The extension generates an optional **`cppdbg`** config; the main flow is the **AVR Debug** panel (**GDB CONSOLE** + views).
 - Custom GDB commands: **GDB CONSOLE** in the panel (same `avr-gdb` session as the toolbar / MI).
 - If the target does not stop, check:
   - sketch includes `debug_init()`
   - correct serial port
   - ELF matches the uploaded firmware
-- If GDB shows **“Source file is more recent than executable”**, **Verify/Upload** again so the ELF matches the sketch, then restart the debug session.
-- If the **session ends but the board keeps running**, GDB closed or crashed — use **Start Debug Session** again; the extension should show a notice when GDB exits.
 
 ## License
 

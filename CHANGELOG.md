@@ -7,11 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.4] - 2026-03-28
 
-### Fixed
+### Added
 
-- **GDB exit:** if `avr-gdb` crashes or closes, the extension now clears session state, rejects pending MI commands, and shows a warning (the MCU can keep running; restart the debug session).
-- **Refresh while running:** the panel no longer calls stack/locals/memory MI while the target is running after **Continue** (that could destabilize GDB and match “debugger closed, sketch runs on its own”).
-- **Breakpoint sync on Windows:** breakpoint keys use a **case-normalized** path so the extension does not send stray `clear` commands (fixes spurious `Deleted breakpoint N` when paths differ only by `C:` vs `c:`).
+- When **avr-gdb exits unexpectedly** (not Stop session), the **AVR-GDB** panel shows a **verbose banner** (exit code, signal, stderr tail) and a **notification** with actions to open the panel or copy details.
 
 ## [0.0.3] - 2026-03-28
 

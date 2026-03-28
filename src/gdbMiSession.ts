@@ -39,6 +39,16 @@ export type RegisterRow = {
   value: string;
 };
 
+/** Emitted when the GDB child process exits (crash, kill, or normal quit). */
+export type GdbProcessExitInfo = {
+  /** True if {@link GdbMiSession.dispose} requested shutdown (Stop session / user quit). */
+  intentional: boolean;
+  exitCode: number | null;
+  exitSignal: NodeJS.Signals | null;
+  /** Last bytes of GDB stderr (errors often appear here). */
+  stderrTail: string;
+};
+
 export type GdbMiSessionOptions = {
   gdbPath: string;
   elfPath: string;
@@ -49,8 +59,8 @@ export type GdbMiSessionOptions = {
   onLog?: (line: string, stream: "console" | "log") => void;
   /** Raw MI line for debugging */
   onDebugLine?: (line: string) => void;
-  /** GDB process ended (crash, quit, or killed) — clear UI session state */
-  onExit?: (code: number | null, signal: NodeJS.Signals | null) => void;
+  /** Child process exited (unexpected exits should be surfaced to the user). */
+  onProcessExit?: (info: GdbProcessExitInfo) => void;
 };
 
 /** Escape payload for `-interpreter-exec console "..."` (must be a single MI line — real newlines break the parser). */
@@ -138,6 +148,8 @@ function parseMiStreamRecord(
   return undefined;
 }
 
+const STDERR_TAIL_MAX = 12_000;
+
 export class GdbMiSession {
   private proc: ChildProcessWithoutNullStreams | undefined;
   private buffer = "";
@@ -148,6 +160,9 @@ export class GdbMiSession {
   >();
   private options: GdbMiSessionOptions;
   private disposed = false;
+  /** Set at the start of {@link dispose} so {@link ChildProcess} `exit` is treated as intentional. */
+  private extensionRequestedShutdown = false;
+  private stderrTail = "";
 
   constructor(options: GdbMiSessionOptions) {
     this.options = options;
@@ -165,6 +180,8 @@ export class GdbMiSession {
     if (this.proc) {
       await this.dispose();
     }
+    this.extensionRequestedShutdown = false;
+    this.stderrTail = "";
     const { gdbPath } = this.options;
     const args = ["-q", "-nx", "-i=mi2"];
     this.proc = spawn(gdbPath, args, {
@@ -174,15 +191,20 @@ export class GdbMiSession {
     this.proc.stdout.on("data", (c: Buffer) => this.onStdout(c));
     this.proc.stderr.on("data", (c: Buffer) => {
       const t = c.toString("utf8");
+      this.stderrTail = (this.stderrTail + t).slice(-STDERR_TAIL_MAX);
       this.options.onLog?.(t, "log");
     });
     this.proc.on("exit", (code, signal) => {
+      const intentional = this.extensionRequestedShutdown;
+      this.extensionRequestedShutdown = false;
       this.proc = undefined;
-      for (const [, p] of this.pending) {
-        p.reject(new Error("GDB process exited"));
-      }
-      this.pending.clear();
-      this.options.onExit?.(code ?? null, signal ?? null);
+      const info: GdbProcessExitInfo = {
+        intentional,
+        exitCode: code,
+        exitSignal: signal ?? null,
+        stderrTail: this.stderrTail
+      };
+      this.options.onProcessExit?.(info);
     });
     this.proc.on("error", (err) => {
       this.options.onLog?.(`GDB spawn error: ${err.message}\n`, "log");
@@ -196,6 +218,7 @@ export class GdbMiSession {
 
   async dispose(): Promise<void> {
     this.disposed = true;
+    this.extensionRequestedShutdown = true;
     if (this.proc && !this.proc.killed) {
       try {
         this.proc.stdin.write("-gdb-exit\n");
